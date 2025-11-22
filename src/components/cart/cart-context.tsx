@@ -1,7 +1,8 @@
 "use client";
 
 import { Cart, FullAppSession, Product } from "@/types";
-import { createContext, ReactNode, useContext, useReducer } from "react";
+import { createContext, ReactNode, useContext, useEffect, useReducer, useRef } from "react";
+import { syncCart } from "@/lib/cart";
 
 type CartContextType = {
   cart: Cart;
@@ -89,6 +90,33 @@ export function CartProvider({
     (total, item) => total + item.quantity,
     0,
   );
+
+  // Track if this is the initial mount to avoid syncing on first render
+  const isInitialMount = useRef(true);
+
+  // Sync cart to server whenever it changes (but skip initial mount)
+  useEffect(() => {
+    // Skip sync on initial mount - the cart is already loaded from the server
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
+    const syncCartToServer = async () => {
+      try {
+        await syncCart({
+          items: cart.items.map((item) => ({
+            product_id: item.product.id,
+            quantity: item.quantity,
+          })),
+        });
+      } catch (error) {
+        console.error("Failed to sync cart to server:", error);
+      }
+    };
+
+    syncCartToServer();
+  }, [cart]);
 
   return (
     <CartContext.Provider

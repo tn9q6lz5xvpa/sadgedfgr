@@ -94,7 +94,7 @@ function CartItemCard({ item }: { item: CartItem }) {
 }
 
 export function CartModal() {
-  const { cart, totalQuantities } = useCart();
+  const { cart, totalQuantities, dispatch } = useCart();
 
   const [isOpen, setIsOpen] = useState(false);
   const openCart = () => setIsOpen(true);
@@ -105,6 +105,12 @@ export function CartModal() {
   const gotoCheckout = () => {
     closeCart();
     router.push("/checkout");
+  };
+
+  const clearCart = () => {
+    if (confirm("Are you sure you want to clear your cart?")) {
+      dispatch({ type: "clear" });
+    }
   };
 
   const quantityRef = useRef(totalQuantities);
@@ -181,23 +187,35 @@ export function CartModal() {
                     <CartItemCard key={item.product.id} item={item} />
                   ))}
                 </div>
-                <div className="flex items-center justify-between gap-4 pt-8 border-t">
-                  <p className="text-lg font-semibold">
-                    Total: ${totalCartCost.totalCost}
-                    {Number(totalCartCost.saving) > 0 && (
-                      <span className="text-neutral-500">
-                        {" "}
-                        (Saved ${totalCartCost.saving})
-                      </span>
+                <div className="flex flex-col gap-4 pt-8 border-t">
+                  <div className="flex items-center justify-between">
+                    <p className="text-lg font-semibold">
+                      Total: ${totalCartCost.totalCost}
+                      {Number(totalCartCost.saving) > 0 && (
+                        <span className="text-neutral-500">
+                          {" "}
+                          (Saved ${totalCartCost.saving})
+                        </span>
+                      )}
+                    </p>
+                    {cart.items.length > 0 && (
+                      <button
+                        onClick={clearCart}
+                        className="text-sm text-neutral-600 hover:text-neutral-800 underline"
+                      >
+                        Clear Cart
+                      </button>
                     )}
-                  </p>
-                  <Link
-                    href="/checkout"
-                    onClick={gotoCheckout}
-                    className={buttonVariants()}
-                  >
-                    Checkout
-                  </Link>
+                  </div>
+                  {cart.items.length > 0 && (
+                    <Link
+                      href="/checkout"
+                      onClick={gotoCheckout}
+                      className={buttonVariants()}
+                    >
+                      Checkout
+                    </Link>
+                  )}
                 </div>
               </div>
             </DialogPanel>

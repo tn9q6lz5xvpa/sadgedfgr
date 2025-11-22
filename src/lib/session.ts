@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/db";
-import { productsTable } from "@/db/schema";
-import { AppSession, FullAppSession, SessionCartItem } from "@/types";
+import { productsTable, booksTable } from "@/db/schema";
+import { AppSession, FullAppSession, Product, SessionCartItem } from "@/types";
 import { inArray } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
@@ -66,12 +66,47 @@ export const getSession = cache(async (): Promise<FullAppSession> => {
     if (typeof jwtPayload === "object" && jwtPayload !== null) {
       const { user, cart } = jwtPayload as AppSession;
 
-      const products = await db.query.productsTable.findMany({
-        where: inArray(
-          productsTable.id,
-          cart.items.map((item) => item.product_id),
-        ),
-      });
+      const productIds = cart.items.map((item) => item.product_id);
+
+      // If cart is empty, return early
+      if (productIds.length === 0) {
+        return {
+          user,
+          cart: {
+            items: [],
+          },
+        };
+      }
+
+      // Query both products and books
+      const [products, books] = await Promise.all([
+        db.query.productsTable.findMany({
+          where: inArray(productsTable.id, productIds),
+        }),
+        db.query.booksTable.findMany({
+          where: inArray(booksTable.id, productIds),
+        }),
+      ]);
+
+      // Convert books to product-like structure
+      const booksAsProducts: Product[] = books.map((book) => ({
+        id: book.id,
+        name: book.title,
+        description: book.description,
+        price: book.price,
+        discount_percent: book.discount_percent,
+        image_urls: [book.cover_url],
+        stock_quantity: book.stock_quantity,
+        featured: book.featured,
+        ingredients: null,
+        nutritional_info: null,
+        allergen_info: null,
+        serving_suggestions: null,
+        storage_instructions: null,
+      }));
+
+      // Combine products and books (books converted to products)
+      const allProducts = [...products, ...booksAsProducts];
 
       return {
         user,
@@ -79,7 +114,7 @@ export const getSession = cache(async (): Promise<FullAppSession> => {
           ...cart,
           items: cart.items
             .map((item) => {
-              const product = products.find(
+              const product = allProducts.find(
                 (product) => product.id === item.product_id,
               );
 

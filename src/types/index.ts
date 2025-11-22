@@ -5,6 +5,9 @@ import {
   ProductEntity,
   ProductReviewEntity,
   UserEntity,
+  BookEntity,
+  CategoryEntity,
+  BookReviewEntity,
 } from "@/db/schema";
 
 export type Product = ProductEntity;
@@ -115,3 +118,7 @@ export type Message = {
 };
 
 export type ProductReview = ProductReviewEntity;
+
+export type Book = BookEntity;
+export type Category = CategoryEntity;
+export type BookReview = BookReviewEntity;

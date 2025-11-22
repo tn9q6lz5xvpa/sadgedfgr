@@ -22,7 +22,37 @@ export function PaymentForm({
         body: formData,
       });
 
-      const json = await res.json();
+      // Check if response is ok and has content
+      if (!res.ok) {
+        const errorText = await res.text();
+        let errorMessage = `Failed to create order: ${res.status} ${res.statusText}`;
+        
+        // Try to parse error as JSON if possible
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorMessage;
+        } catch {
+          // If not JSON, use the text or status
+          if (errorText) {
+            errorMessage = errorText;
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      // Check if response has content before parsing
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Invalid response format from server");
+      }
+
+      const text = await res.text();
+      if (!text) {
+        throw new Error("Empty response from server");
+      }
+
+      const json = JSON.parse(text);
 
       if (json.error) {
         throw new Error(json.error);
@@ -58,7 +88,34 @@ export function PaymentForm({
         }),
       });
 
-      const json = await res.json();
+      // Check if response is ok and has content
+      if (!res.ok) {
+        const errorText = await res.text();
+        let errorMessage = `Failed to capture order: ${res.status} ${res.statusText}`;
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorMessage;
+        } catch {
+          if (errorText) {
+            errorMessage = errorText;
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Invalid response format from server");
+      }
+
+      const text = await res.text();
+      if (!text) {
+        throw new Error("Empty response from server");
+      }
+
+      const json = JSON.parse(text);
 
       const paypalOrderData = json.jsonResponse;
       const order = json.order as Order;

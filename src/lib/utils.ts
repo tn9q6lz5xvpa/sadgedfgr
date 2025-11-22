@@ -1,4 +1,4 @@
-import { Cart, CartItem, Product } from "@/types";
+import { Book, Cart, CartItem, Product } from "@/types";
 import clsx, { ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -49,5 +49,48 @@ export function getCartTotalCost(cart: Cart) {
 
   const saving = (Number(originalTotalCost) - Number(totalCost)).toFixed(2);
 
+  return { totalCost, originalTotalCost, saving };
+}
+
+export function getBookCost(book: Book) {
+  const price = (
+    Number(book.price) *
+    (100 - Number(book.discount_percent)) *
+    0.01
+  ).toFixed(2);
+  const originalPrice = book.price;
+  return { price, originalPrice };
+}
+
+// Optional: If you want cart functionality for books
+export type BookCartItem = {
+  book: Book;
+  book_id: string;
+  quantity: number;
+};
+
+export type BookCart = {
+  items: BookCartItem[];
+};
+
+export function getBookCartItemCost(item: BookCartItem) {
+  const bookCost = getBookCost(item.book);
+  return {
+    cost: (Number(bookCost.price) * item.quantity).toFixed(2),
+    originalCost: (Number(bookCost.originalPrice) * item.quantity).toFixed(2),
+  };
+}
+
+export function getBookCartTotalCost(cart: BookCart) {
+  const totalCost = cart.items
+    .reduce((total, item) => total + Number(getBookCartItemCost(item).cost), 0)
+    .toFixed(2);
+  const originalTotalCost = cart.items
+    .reduce(
+      (total, item) => total + Number(getBookCartItemCost(item).originalCost),
+      0
+    )
+    .toFixed(2);
+  const saving = (Number(originalTotalCost) - Number(totalCost)).toFixed(2);
   return { totalCost, originalTotalCost, saving };
 }

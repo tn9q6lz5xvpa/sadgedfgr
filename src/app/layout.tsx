@@ -72,9 +72,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div>
               <h5 className="font-semibold">Customer</h5>
               <ul className="mt-3 text-sm space-y-2 text-[rgba(255,248,243,0.9)]">
-                <li>Shipping & Returns</li>
-                <li>Payment Methods</li>
-                <li>Help Center</li>
+                <li>
+                  <Link href="/refunds-and-returns-terms" className="hover:underline">
+                    Shipping & Returns
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="hover:underline">
+                    Terms & Conditions
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/promotion-terms" className="hover:underline">
+                    Promotions Terms
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/accessibility-statement" className="hover:underline">
+                    Accessibility
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>

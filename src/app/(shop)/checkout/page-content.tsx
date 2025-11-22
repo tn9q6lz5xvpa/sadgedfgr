@@ -193,14 +193,17 @@ function DeliveryForm({
   );
 }
 
-const initialOptions: ReactPayPalScriptOptions = {
-  clientId: process.env.PAYPAL_CLIENT_ID!,
-  currency: "USD",
-  components: "buttons",
-  disableFunding: "paylater",
-};
-
-export function CheckoutPageContent() {
+export function CheckoutPageContent({
+  paypalClientId,
+}: {
+  paypalClientId: string;
+}) {
+  const initialOptions: ReactPayPalScriptOptions = {
+    clientId: paypalClientId,
+    currency: "USD",
+    components: "buttons",
+    disableFunding: "paylater",
+  };
   const session = useSession();
   const { cart, dispatch } = useCart();
 
@@ -221,8 +224,8 @@ export function CheckoutPageContent() {
     return (
       <div className="container py-12 text-center flex flex-col items-center">
         <h1 className="text-3xl font-medium mb-8">Your cart is empty</h1>
-        <Link href="/products" className={buttonVariants({ size: "lg" })}>
-          Browse Products
+        <Link href="/catalog" className={buttonVariants({ size: "lg" })}>
+          Browse Catalog
         </Link>
       </div>
     );
@@ -262,7 +265,21 @@ export function CheckoutPageContent() {
           )}
         </div>
         <div>
-          <h2 className="text-xl font-medium mb-4">Your order</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-medium">Your order</h2>
+            {cart.items.length > 0 && (
+              <button
+                onClick={() => {
+                  if (confirm("Are you sure you want to clear your cart?")) {
+                    dispatch({ type: "clear" });
+                  }
+                }}
+                className="text-sm text-neutral-600 hover:text-neutral-800 underline"
+              >
+                Clear Cart
+              </button>
+            )}
+          </div>
           <div className="flex flex-col gap-4 mb-12 w-full">
             {cart.items.map((item) => (
               <CartItemCard key={item.product.id} item={item} />

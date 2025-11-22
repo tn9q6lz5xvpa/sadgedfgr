@@ -7,8 +7,12 @@ import {
   productCollectionsTable,
   productReviewsTable,
   productsTable,
+  booksTable,
+  categoriesTable,
+  bookCategoriesTable,
+  bookReviewsTable,
 } from "@/db/schema";
-import { Collection, Product } from "@/types";
+import { Book, Category, Collection, Product } from "@/types";
 import { and, desc, eq, inArray, ne } from "drizzle-orm";
 import { cache } from "react";
 
@@ -103,5 +107,61 @@ export const getFeaturedProducts = cache(async (): Promise<Product[]> => {
   return db.query.productsTable.findMany({
     limit: 4,
     where: eq(productsTable.featured, true),
+  });
+});
+
+export const getCategories = cache(async (): Promise<Category[]> => {
+  return db.query.categoriesTable.findMany();
+});
+
+export const getCategoriesByIds = cache(
+  async (ids: string[]): Promise<Category[]> => {
+    return db.query.categoriesTable.findMany({
+      where: inArray(categoriesTable.id, ids),
+    });
+  }
+);
+
+export const getBooks = cache(async (): Promise<Book[]> => {
+  return db.query.booksTable.findMany();
+});
+
+export const getBook = cache(async (id: string): Promise<Book | null> => {
+  return db.query.booksTable
+    .findFirst({
+      where: eq(booksTable.id, id),
+      with: {
+        bookReviews: {
+          with: {
+            user: {
+              columns: {
+                first_name: true,
+                last_name: true,
+              },
+            },
+          },
+          orderBy: desc(bookReviewsTable.created_at),
+        },
+      },
+    })
+    .then((book) => book ?? null);
+});
+
+export const getBooksByCategoryId = cache(
+  async (id: string): Promise<Book[]> => {
+    const bookCategories = await db.query.bookCategoriesTable.findMany({
+      where: eq(bookCategoriesTable.category_id, id),
+      with: {
+        book: true,
+      },
+    });
+    return bookCategories.map((bc) => bc.book);
+  }
+);
+
+export const getFeaturedBooks = cache(async (): Promise<Book[]> => {
+  return db.query.booksTable.findMany({
+    limit: 4,
+    where: eq(booksTable.featured, true),
   });
 });

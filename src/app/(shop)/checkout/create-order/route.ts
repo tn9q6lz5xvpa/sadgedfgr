@@ -25,36 +25,62 @@ const limiter = rateLimit({
 });
 
 export async function POST(request: Request) {
-  // allows 30 requests per minute
-  await limiter.check(30);
+  try {
+    // allows 30 requests per minute
+    await limiter.check(30);
 
-  const formData = await request.formData();
+    const formData = await request.formData();
 
-  let validationSchema = schema;
+    let validationSchema = schema;
 
-  const session = await getSession();
-  if (session.user?.country_code) {
-    // set shipping_phone_number to be validated against user country code
-    validationSchema = schema.extend({
-      shipping_phone_number: phoneNumberWithCountryCodeSchema(
-        session.user.country_code,
-      ),
+    const session = await getSession();
+    if (session.user?.country_code) {
+      // set shipping_phone_number to be validated against user country code
+      validationSchema = schema.extend({
+        shipping_phone_number: phoneNumberWithCountryCodeSchema(
+          session.user.country_code,
+        ),
+      });
+    }
+
+    const formSchema = zfd.formData(validationSchema);
+
+    let data;
+    try {
+      data = formSchema.parse(formData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return Response.json(
+          {
+            error: `Validation error: ${error.errors.map((e) => e.message).join(", ")}`,
+          },
+          { status: 400 },
+        );
+      }
+      throw error;
+    }
+
+    const res = await createOrder(session, data);
+
+    if ("error" in res) {
+      return Response.json(res, {
+        status: 400,
+      });
+    }
+
+    return Response.json(res.jsonResponse, {
+      status: res.httpStatusCode,
     });
+  } catch (error) {
+    console.error("Error in create-order route:", error);
+    return Response.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred while creating the order",
+      },
+      { status: 500 },
+    );
   }
-
-  const formSchema = zfd.formData(validationSchema);
-
-  const data = formSchema.parse(formData);
-
-  const res = await createOrder(session, data);
-
-  if ("error" in res) {
-    return Response.json(res, {
-      status: 400,
-    });
-  }
-
-  return Response.json(res.jsonResponse, {
-    status: res.httpStatusCode,
-  });
 }
