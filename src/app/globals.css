@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root{
+--wood-brown: #8B6B4F;
+--beige-cream: #F5EDE3;
+--dark-coffee: #4E3B31;
+--warm-white: #FBF8F3;
+--gold-accent: #C8A165;
+}
+
+
+@layer base {
+html, body, #__next {
+height: 100%;
+background-color: var(--beige-cream);
+color: var(--dark-coffee);
+}
+
+
+body {
+font-family: 'Merriweather', serif;
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+line-height: 1.5;
+}
+
+
+h1,h2,h3,h4,h5,h6 {
+color: var(--wood-brown);
+font-weight: 700;
+letter-spacing: -0.01em;
+}
+
+
+a { color: inherit; }
+}
+
+
+/* Card style for book */
+.book-card {
+background: linear-gradient(180deg, var(--warm-white), rgba(255,255,255,0.9));
+border: 1px solid rgba(78,59,49,0.08);
+box-shadow: 0 6px 18px rgba(78,59,49,0.06);
+border-radius: 12px;
+}
+
+
+/* subtle accent button */
+.btn-wood {
+@apply inline-block px-4 py-2 rounded-md font-medium;
+background: linear-gradient(180deg, var(--gold-accent), var(--wood-brown));
+color: white;
+box-shadow: 0 6px 14px rgba(139,107,79,0.14);
+}
+
+
+/* utility tweaks */
+.header-shadow { box-shadow: 0 4px 10px rgba(78,59,49,0.06); }
