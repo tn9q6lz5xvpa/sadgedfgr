@@ -18,10 +18,10 @@ export const CompleteScreen: FC<{
         className="w-48 h-48 object-cover rounded mb-8"
       />
       <h1 className="text-3xl font-bold mb-4 text-gray-800">
-        Your Order is Freshly Baked!
+        Your Order is Completed!
       </h1>
       <p className="text-xl text-gray-600 mb-8 max-w-xl text-center">
-        Thank you for placing your order with AI Oven! We’ve whisked up
+        Thank you for placing your order with The Book Haven! We’ve whisked up
         something special, and your treats are on their way.
       </p>
       <div className="flex gap-4">
