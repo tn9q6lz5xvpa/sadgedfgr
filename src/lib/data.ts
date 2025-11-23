@@ -11,6 +11,7 @@ import {
   categoriesTable,
   bookCategoriesTable,
   bookReviewsTable,
+  bookOrderItemsTable,
 } from "@/db/schema";
 import { Book, Category, Collection, Product } from "@/types";
 import { and, desc, eq, inArray, ne } from "drizzle-orm";
@@ -73,9 +74,9 @@ export const getOrdersByUserId = cache(async (userId: number) => {
       ne(ordersTable.status, "pending"),
     ),
     with: {
-      orderItems: {
+      bookOrderItems: {
         with: {
-          product: true,
+          book: true,
         },
       },
     },
@@ -92,9 +93,9 @@ export const getOrderByIdAndUserId = cache(
           eq(ordersTable.user_id, userId),
         ),
         with: {
-          orderItems: {
+          bookOrderItems: {
             with: {
-              product: true,
+              book: true,
             },
           },
         },

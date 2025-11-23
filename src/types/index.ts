@@ -8,6 +8,7 @@ import {
   BookEntity,
   CategoryEntity,
   BookReviewEntity,
+  BookOrderItemEntity,
 } from "@/db/schema";
 
 export type Product = ProductEntity;
@@ -99,7 +100,9 @@ export type CaptureOrderResponse = {
   httpStatusCode: number;
 };
 
-export type Order = OrderEntity;
+export type Order = OrderEntity & {
+  bookOrderItems?: BookOrderItemEntity[];
+};
 export type OrderItem = OrderItemEntity;
 
 export type ProductDataVectorEntity = {

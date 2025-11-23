@@ -1,5 +1,6 @@
 import { getSession } from "@/lib/session";
 import { CartProvider } from "@/components/cart";
+import { SessionProvider } from "@/components/session";
 
 export default async function ShopLayout({
   children,
@@ -8,6 +9,9 @@ export default async function ShopLayout({
 }) {
   const session = await getSession();
 
-  return <CartProvider initialSession={session}>{children}</CartProvider>;
+  return (
+    <SessionProvider session={session}>
+      <CartProvider initialSession={session}>{children}</CartProvider>
+    </SessionProvider>
+  );
 }
-

@@ -128,10 +128,12 @@ export const ordersTable = pgTable("orders", {
 
 export const orderRelations = relations(ordersTable, ({ many }) => ({
   orderItems: many(orderItemsTable),
+  bookOrderItems: many(bookOrderItemsTable),
 }));
 
 export type OrderEntity = InferSelectModel<typeof ordersTable> & {
   orderItems?: OrderItemEntity[];
+  bookOrderItems?: BookOrderItemEntity[];
 };
 
 export const orderItemsTable = pgTable("order_items", {
@@ -300,4 +302,38 @@ export const bookReviewRelations = relations(bookReviewsTable, ({ one }) => ({
 export type BookReviewEntity = InferSelectModel<typeof bookReviewsTable> & {
   book?: BookEntity;
   user?: Pick<UserEntity, "last_name" | "first_name">;
+};
+
+// Book order items table
+export const bookOrderItemsTable = pgTable(
+  "book_order_items",
+  {
+    order_id: integer()
+      .references(() => ordersTable.id, { onDelete: "cascade" })
+      .notNull(),
+    book_id: varchar({ length: 50 })
+      .references(() => booksTable.id, { onDelete: "cascade" })
+      .notNull(),
+    quantity: integer().notNull(),
+    price: decimal({ precision: 10, scale: 2 }).notNull(),
+    subtotal: decimal({ precision: 10, scale: 2 }).notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.order_id, table.book_id] }),
+  })
+);
+
+export const bookOrderItemRelations = relations(bookOrderItemsTable, ({ one }) => ({
+  order: one(ordersTable, {
+    fields: [bookOrderItemsTable.order_id],
+    references: [ordersTable.id],
+  }),
+  book: one(booksTable, {
+    fields: [bookOrderItemsTable.book_id],
+    references: [booksTable.id],
+  }),
+}));
+
+export type BookOrderItemEntity = InferSelectModel<typeof bookOrderItemsTable> & {
+  book?: BookEntity;
 };

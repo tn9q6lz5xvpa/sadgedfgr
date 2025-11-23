@@ -8,32 +8,27 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 const getDescription = (order: Order) => {
-  // "Item 1, Item 2, and Item 3" or "Item 1, Item 2, Item 3, and 2 more"
-  const firstThreeOrderItems = order.orderItems?.slice(0, 3);
-  const remainingOrderItems = order.orderItems?.slice(3);
+  const bookItems = order.bookOrderItems?.slice(0, 3) ?? [];
+  const remaining = (order.bookOrderItems?.length ?? 0) - 3;
 
-  const firstThreeItems = firstThreeOrderItems
-    ?.map((item) => item.product?.name)
-    .join(", ");
-  const remainingItems = remainingOrderItems?.length
-    ? `and ${remainingOrderItems.length} more`
-    : "";
+  const itemNames = bookItems.map((item) => item.book?.title).join(", ");
+  const remainingText = remaining > 0 ? ` and ${remaining} more` : "";
 
-  return `${firstThreeItems} ${remainingItems}`;
+  return `${itemNames}${remainingText}`;
 };
 
 function OrderCard({ order }: { order: Order }) {
-  const firstOrderItem = order.orderItems?.[0];
+  const firstBookItem = order.bookOrderItems?.[0];
 
   return (
-    <div className="bg-gray-50 p-4 border-l-4 border-indigo-500 hover:bg-gray-100 flex">
-      {firstOrderItem?.product?.image_urls[0] && (
+    <div className="bg-gray-50 p-4 border-l-4 border-[var(--wood-brown)] hover:bg-gray-100 flex">
+      {firstBookItem?.book?.cover_url && (
         <Image
-          src={firstOrderItem.product.image_urls[0]}
-          alt={firstOrderItem.product.name}
+          src={firstBookItem.book.cover_url}
+          alt={firstBookItem.book.title}
           width={96}
-          height={96}
-          className="w-24 h-24 object-cover rounded"
+          height={144}
+          className="w-24 h-36 object-cover rounded shadow"
         />
       )}
       <div className="flex-1 flex flex-col ml-4">
@@ -42,6 +37,9 @@ function OrderCard({ order }: { order: Order }) {
           {format(new Date(order.created_at), "MMMM d, yyyy h:mm a")}
         </p>
         <p className="text-gray-700 text-sm mb-2">{getDescription(order)}</p>
+        <p className="text-gray-600 text-sm">
+          {order.bookOrderItems?.length ?? 0} item{(order.bookOrderItems?.length ?? 0) !== 1 && "s"} · ${order.total_price}
+        </p>
       </div>
     </div>
   );
@@ -75,6 +73,6 @@ export default async function OrdersPage() {
 }
 
 export const metadata: Metadata = {
-  title: "My Orders - AI Oven",
+  title: "My Orders - The Book Haven",
   robots: "noindex",
 };
